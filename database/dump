@@ -1,0 +1,22 @@
+#!/bin/bash
+
+root_password="root"
+database_name="laravel"
+dump_file="backup.sql"
+
+# Obtendo o ID do contêiner
+container_id=$(docker ps -qf "name=database-db-")
+
+# Verificando se o ID do contêiner foi encontrado
+if [ -z "$container_id" ]; then
+    echo "Erro: Não foi possível encontrar o contêiner com o nome 'database-db-'."
+    exit 1
+fi
+
+# Comando para entrar no bash do contêiner e fazer o dump
+docker exec -i "$container_id" bash -c "mysqldump -uroot -p'$root_password' $database_name > /tmp/$dump_file"
+
+# Copiar o arquivo de dump do contêiner para o diretório do projeto
+docker cp "$container_id:/tmp/$dump_file" ./
+
+echo "Backup do banco de dados $database_name concluído e copiado para o diretório do projeto."
